@@ -16,6 +16,9 @@
 # Mono auto generated files
 mono_crash.*
 
+# Pastas de migrações, se desejar ignorar
+**/Migrations/
+
 # Build results
 [Dd]ebug/
 [Dd]ebugPublic/

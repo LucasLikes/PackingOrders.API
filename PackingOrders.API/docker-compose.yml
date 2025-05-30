@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    container_name: sqlserver_packingorder
+    environment:
+      SA_PASSWORD: "Teste123456"
+      ACCEPT_EULA: "Y"
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+    networks:
+      - packingnet
+
+  packingapi:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: packingorder_api
+    depends_on:
+      - sqlserver
+    environment:
+      ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=MinhaLoja;User Id=sa;Password=Teste123456;TrustServerCertificate=True;"
+      Jwt__Secret: "sua_chave_super_secreta_aqui_mais_longa"
+    ports:
+      - "5000:80"
+    networks:
+      - packingnet
+
+volumes:
+  sqlserver_data:
+
+networks:
+  packingnet:
