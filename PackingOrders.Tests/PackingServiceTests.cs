@@ -8,7 +8,7 @@ namespace PackingOrders.Tests
     public class PackingServiceTests
     {
         [Fact]
-        public async Task DeveEmpacotarPedidoEmCaixaCorreta()
+        public async Task PackOrderAsync_DeveEmpacotarProdutoEmUmaCaixa()
         {
             // Arrange
             var service = new PackingService();
@@ -26,6 +26,24 @@ namespace PackingOrders.Tests
             // Assert
             Assert.Single(resultado);
             Assert.Single(resultado[0].Products);
+        }
+
+        [Fact]
+        public async Task PackOrderAsync_DeveCriarDuasCaixasParaDoisProdutosGrandes()
+        {
+            var service = new PackingService();
+            var pedido = new Order
+            {
+                Products = new List<Product>
+        {
+            new Product { Height = 40, Width = 40, Length = 40 },
+            new Product { Height = 40, Width = 40, Length = 40 }
+        }
+            };
+
+            var resultado = await service.PackOrderAsync(pedido);
+
+            Assert.Equal(2, resultado.Count); // Espera duas caixas
         }
     }
 }

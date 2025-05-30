@@ -2,6 +2,8 @@
 using PackingOrders.API.Models;
 using PackingOrders.API.Data;
 using PackingOrders.API.Services;
+using PackingOrders.API.DTOs;
+using Microsoft.AspNetCore.Authorization;
 
 namespace PackingOrders.API.Controllers
 {
@@ -17,23 +19,46 @@ namespace PackingOrders.API.Controllers
             _packingService = packingService;
             _context = context;
         }
-
+        [Authorize]
         [HttpPost("pack")]
-        public async Task<IActionResult> ProcessOrder([FromBody] Order order)
+        public async Task<IActionResult> ProcessOrders([FromBody] List<OrderInputDto> ordersDto)
         {
-            if (order.Products != null)
-            {
-                foreach (var product in order.Products)
-                {
-                    product.Order = order; // Relacionamento manual
-                }
-            }
+            if (ordersDto == null || !ordersDto.Any())
+                return BadRequest("Nenhum pedido recebido.");
 
-            _context.Orders.Add(order); // Salva a ordem com os produtos
+            // Converter os DTOs para modelos de domínio Order e Product
+            var orders = ordersDto.Select(dto => new Order
+            {
+                OrderCode = dto.OrderCode,
+                Products = dto.Products.Select(p => new Product
+                {
+                    Name = p.Name,
+                    Height = p.Height,
+                    Width = p.Width,
+                    Length = p.Length
+                }).ToList()
+            }).ToList();
+
+            // Adicionar os pedidos no contexto para salvar no banco
+            foreach (var order in orders)
+            {
+                _context.Orders.Add(order);
+            }
             await _context.SaveChangesAsync();
 
-            var result = await _packingService.PackOrderAsync(order);
-            return Ok(result);
+            // Processar cada pedido e empacotar
+            var results = new List<object>();
+            foreach (var order in orders)
+            {
+                var packedBoxes = await _packingService.PackOrderAsync(order);
+                results.Add(new
+                {
+                    OrderCode = order.OrderCode,
+                    PackedBoxes = packedBoxes
+                });
+            }
+
+            return Ok(results);
         }
     }
 }
