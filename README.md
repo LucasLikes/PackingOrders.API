@@ -70,8 +70,7 @@ Cada produto é comparado com essas caixas e alocado na menor caixa que comporta
 
 A API possui autenticação via JWT, protegendo os endpoints principais. Para obter o token:
 
-1. Acesse `/api/auth/login` com um payload válido (usuário/senha).
-2. Copie o token JWT da resposta.
+1. Copie o token JWT da resposta.
 3. No Swagger UI, clique em "Authorize" e insira o token no formato `Bearer {seu_token}`.
 
 ---
